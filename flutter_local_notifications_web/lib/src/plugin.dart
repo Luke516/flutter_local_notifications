@@ -38,8 +38,13 @@ class WebFlutterLocalNotificationsPlugin
   ServiceWorkerRegistration? _registration;
 
   @override
-  Future<void> show(int id, String? title, String? body,
-      {String? payload, WebNotificationDetails? details}) async {
+  Future<void> show(
+    int id,
+    String? title,
+    String? body, {
+    String? payload,
+    WebNotificationDetails? details,
+  }) async {
     if (_registration == null) {
       throw StateError(
         'FlutterLocalNotifications.show(): You must call initialize() before '
@@ -63,10 +68,7 @@ class WebFlutterLocalNotificationsPlugin
     }
 
     await _registration!
-        .showNotification(
-          title ?? '',
-          details.toJs(id, body, payload),
-        )
+        .showNotification(title ?? '', details.toJs(id, body, payload))
         .toDart;
   }
 
@@ -83,7 +85,7 @@ class WebFlutterLocalNotificationsPlugin
     final ServiceWorkerContainer serviceWorker = window.navigator.serviceWorker;
     _registration = await serviceWorker.getRegistration().toDart;
     const String jsPath =
-        './assets/packages/flutter_local_notifications_web/web/notifications_service_worker.js';
+        './assets/packages/flutter_local_notifications_web/web/custom_notification_sw.js';
     _registration = await serviceWorker.register(jsPath.toJS).toDart;
 
     // Subscribe to messages from the service worker
@@ -110,7 +112,7 @@ class WebFlutterLocalNotificationsPlugin
 
   @override
   Future<NotificationAppLaunchDetails?>
-      getNotificationAppLaunchDetails() async {
+  getNotificationAppLaunchDetails() async {
     final Uri uri = Uri.parse(window.location.toString());
     final Map<String, String> query = uri.queryParameters;
     final String? id = query['notification_id'];
@@ -143,8 +145,8 @@ class WebFlutterLocalNotificationsPlugin
     }
     final List<ActiveNotification> result = <ActiveNotification>[];
     final Set<int> ids = <int>{};
-    final List<Notification> jsNotifs =
-        await _registration!.getDartNotifications();
+    final List<Notification> jsNotifs = await _registration!
+        .getDartNotifications();
     for (final Notification jsNotification in jsNotifs) {
       final int? id = jsNotification.id;
       if (id == null) {
@@ -162,8 +164,8 @@ class WebFlutterLocalNotificationsPlugin
     if (_registration == null) {
       return;
     }
-    final List<Notification> notifs =
-        await _registration!.getDartNotifications();
+    final List<Notification> notifs = await _registration!
+        .getDartNotifications();
     for (final Notification notification in notifs) {
       if (notification.id == id || (tag != null && tag == notification.tag)) {
         notification.close();
@@ -176,8 +178,8 @@ class WebFlutterLocalNotificationsPlugin
     if (_registration == null) {
       return;
     }
-    final List<Notification> notifs =
-        await _registration!.getDartNotifications();
+    final List<Notification> notifs = await _registration!
+        .getDartNotifications();
     for (final Notification notification in notifs) {
       notification.close();
     }
@@ -185,17 +187,25 @@ class WebFlutterLocalNotificationsPlugin
 
   @override
   Future<List<PendingNotificationRequest>>
-      pendingNotificationRequests() async => <PendingNotificationRequest>[];
+  pendingNotificationRequests() async => <PendingNotificationRequest>[];
 
   @override
   Future<void> periodicallyShow(
-      int id, String? title, String? body, RepeatInterval repeatInterval) {
+    int id,
+    String? title,
+    String? body,
+    RepeatInterval repeatInterval,
+  ) {
     throw UnsupportedError('periodicallyShow() is not supported on the web');
   }
 
   @override
   Future<void> periodicallyShowWithDuration(
-      int id, String? title, String? body, Duration repeatDurationInterval) {
+    int id,
+    String? title,
+    String? body,
+    Duration repeatDurationInterval,
+  ) {
     throw UnsupportedError(
       'periodicallyShowWithDuration() is not supported '
       'on the web',

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 // Experimental function to save a notification to the IndexedDB database
 //
@@ -8,13 +8,13 @@ function saveMessage(message) {
   let request = indexedDB.open("flutter_local_notifications", 1);
   request.onupgradeneeded = (event) => {
     let db = event.target.result;
-    db.createObjectStore("notifications", {keyPath: "idb_id"});
-  }
+    db.createObjectStore("notifications", { keyPath: "idb_id" });
+  };
   request.onsuccess = (event) => {
     let db = event.target.result;
     let transaction = db.transaction(["notifications"], "readwrite");
     transaction.objectStore("notifications").add(message);
-  }
+  };
 }
 
 // Handles a clicked notification.
@@ -26,7 +26,7 @@ async function _handleNotif(event) {
   // processing this event. Without this, the event "expires" after the first
   // `await`, and trying to call `clients.openWindow()` later results in a
   // permission error, because the browser thinks they are unrelated events.
-  let allClientsPromise = clients.matchAll({includeUncontrolled: true});
+  let allClientsPromise = clients.matchAll({ includeUncontrolled: true });
   event.waitUntil(allClientsPromise);
   let allClients = await allClientsPromise;
 
@@ -42,13 +42,15 @@ async function _handleNotif(event) {
   // saveMessage(message)
 
   if (allClients.length == 0) {
-    let url = `/?notification_id=${encodeURIComponent(message.id)}`
-      + `&notification_payload=${encodeURIComponent(message.payload)}`
-      + `&notification_action=${encodeURIComponent(message.action)}`
-      + `&notification_reply=${encodeURIComponent(message.reply)}`;
+    let url =
+      `/?notification_id=${encodeURIComponent(message.id)}` +
+      `&notification_payload=${encodeURIComponent(message.payload)}` +
+      `&notification_action=${encodeURIComponent(message.action)}` +
+      `&notification_reply=${encodeURIComponent(message.reply)}`;
     await clients.openWindow(url);
   } else {
     let client = allClients[0];
+    client.focus();
     await client.postMessage(message);
   }
 }
@@ -58,5 +60,9 @@ self.addEventListener("notificationclick", _handleNotif);
 
 // Normally, a service worker only takes effect the _next_ time it is installed.
 // These next lines make sure it takes effect the first time,
-self.addEventListener("install", event => { self.skipWaiting(); });
-self.addEventListener("activate", event => { event.waitUntil(clients.claim()); });
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(clients.claim());
+});
